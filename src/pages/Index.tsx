@@ -13,6 +13,7 @@ const Index = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [selectedServer, setSelectedServer] = useState('us-east-1');
   const [isPremium, setIsPremium] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(30);
 
   const servers = [
     { id: 'us-east-1', name: 'США (Восток)', country: 'USA', city: 'Нью-Йорк', load: 45, ping: 12, type: 'Выделенный', status: 'online' },
@@ -50,8 +51,16 @@ const Index = () => {
 
   const handlePremiumPurchase = () => {
     setIsPremium(true);
+    setTrialDaysLeft(0);
     toast.success('Подписка Premium активирована!', {
       description: 'Теперь у вас есть доступ ко всем возможностям DominoVPN'
+    });
+  };
+
+  const activateTrial = () => {
+    setIsPremium(true);
+    toast.success('Пробный период активирован!', {
+      description: 'У вас есть 30 дней бесплатного доступа к Premium'
     });
   };
 
@@ -73,7 +82,7 @@ const Index = () => {
               {isPremium ? (
                 <Badge className="gap-2 bg-accent">
                   <Icon name="Crown" size={14} />
-                  Premium
+                  Premium {trialDaysLeft > 0 && `• ${trialDaysLeft} дней`}
                 </Badge>
               ) : (
                 <Dialog>
@@ -94,9 +103,17 @@ const Index = () => {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6 py-4">
+                      <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon name="Gift" className="text-accent" size={20} />
+                          <span className="font-semibold text-accent">Специальное предложение</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Попробуйте Premium бесплатно в течение 30 дней</p>
+                      </div>
+                      
                       <div className="text-center">
                         <div className="text-5xl font-bold mb-2">150 ₽</div>
-                        <p className="text-muted-foreground">в месяц</p>
+                        <p className="text-muted-foreground">в месяц после пробного периода</p>
                       </div>
                       
                       <div className="space-y-3">
@@ -147,10 +164,14 @@ const Index = () => {
                         </div>
                       </div>
                     </div>
-                    <DialogFooter>
-                      <Button size="lg" className="w-full" onClick={handlePremiumPurchase}>
+                    <DialogFooter className="flex-col gap-2 sm:flex-col">
+                      <Button size="lg" className="w-full" onClick={activateTrial}>
+                        <Icon name="Gift" className="mr-2" size={20} />
+                        Начать пробный период
+                      </Button>
+                      <Button size="lg" variant="outline" className="w-full" onClick={handlePremiumPurchase}>
                         <Icon name="CreditCard" className="mr-2" size={20} />
-                        Оплатить 150 ₽
+                        Оплатить сразу 150 ₽
                       </Button>
                     </DialogFooter>
                   </DialogContent>
