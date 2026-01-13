@@ -14,6 +14,12 @@ const Index = () => {
   const [selectedServer, setSelectedServer] = useState('us-east-1');
   const [isPremium, setIsPremium] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(30);
+  const [securitySettings, setSecuritySettings] = useState({
+    'AES-256 шифрование': true,
+    'SSL сертификат': true,
+    '2FA аутентификация': true,
+    'Kill Switch': false,
+  });
 
   const servers = [
     { id: 'us-east-1', name: 'США (Восток)', country: 'USA', city: 'Нью-Йорк', load: 45, ping: 12, type: 'Выделенный', status: 'online' },
@@ -25,10 +31,10 @@ const Index = () => {
   ];
 
   const securityStatus = [
-    { name: 'AES-256 шифрование', status: 'active', icon: 'Shield' },
-    { name: 'SSL сертификат', status: 'active', icon: 'Lock' },
-    { name: '2FA аутентификация', status: 'active', icon: 'KeyRound' },
-    { name: 'Kill Switch', status: 'inactive', icon: 'Power' },
+    { name: 'AES-256 шифрование', icon: 'Shield' },
+    { name: 'SSL сертификат', icon: 'Lock' },
+    { name: '2FA аутентификация', icon: 'KeyRound' },
+    { name: 'Kill Switch', icon: 'Power' },
   ];
 
   const stats = [
@@ -62,6 +68,29 @@ const Index = () => {
     toast.success('Пробный период активирован!', {
       description: 'У вас есть 30 дней бесплатного доступа к Premium'
     });
+  };
+
+  const handleNotifications = () => {
+    toast.info('Уведомления', {
+      description: 'У вас нет новых уведомлений'
+    });
+  };
+
+  const handleSettings = () => {
+    toast.info('Настройки', {
+      description: 'Раздел настроек в разработке'
+    });
+  };
+
+  const toggleSecurity = (name: string) => {
+    setSecuritySettings(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+    toast.success(
+      securitySettings[name] ? 'Отключено' : 'Включено',
+      { description: name }
+    );
   };
 
   return (
@@ -177,10 +206,10 @@ const Index = () => {
                   </DialogContent>
                 </Dialog>
               )}
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleNotifications}>
                 <Icon name="Bell" size={20} />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleSettings}>
                 <Icon name="Settings" size={20} />
               </Button>
             </div>
@@ -267,22 +296,28 @@ const Index = () => {
                 <div key={item.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      item.status === 'active' ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
+                      securitySettings[item.name] ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
                       <Icon name={item.icon as any} size={16} />
                     </div>
                     <span className="text-sm font-medium">{item.name}</span>
                   </div>
-                  <Switch checked={item.status === 'active'} />
+                  <Switch 
+                    checked={securitySettings[item.name]} 
+                    onCheckedChange={() => toggleSecurity(item.name)}
+                  />
                 </div>
               ))}
               
               <div className="pt-4 border-t">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Уровень защиты</span>
-                  <Badge className="bg-accent">Максимальный</Badge>
+                  <Badge className="bg-accent">
+                    {Object.values(securitySettings).filter(Boolean).length === 4 ? 'Максимальный' : 
+                     Object.values(securitySettings).filter(Boolean).length >= 2 ? 'Средний' : 'Низкий'}
+                  </Badge>
                 </div>
-                <Progress value={100} className="h-2" />
+                <Progress value={(Object.values(securitySettings).filter(Boolean).length / 4) * 100} className="h-2" />
               </div>
             </CardContent>
           </Card>
