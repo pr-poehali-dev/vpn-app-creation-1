@@ -358,6 +358,68 @@ const Index = () => {
           ))}
         </div>
 
+        <Card className="mb-8 border-accent/50 bg-accent/5">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
+                <Icon name="Download" className="text-accent" size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-2">Скачать VPN клиент для реального подключения</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Для разблокировки YouTube, Instagram и других сервисов установите настоящий VPN-клиент на ваше устройство
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex-col gap-2"
+                    onClick={() => window.open('https://www.wireguard.com/install/', '_blank')}
+                  >
+                    <Icon name="Smartphone" size={24} className="text-primary" />
+                    <div className="text-center">
+                      <p className="font-semibold text-xs">WireGuard</p>
+                      <p className="text-xs text-muted-foreground">iOS/Android</p>
+                    </div>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex-col gap-2"
+                    onClick={() => window.open('https://www.wireguard.com/install/', '_blank')}
+                  >
+                    <Icon name="Laptop" size={24} className="text-primary" />
+                    <div className="text-center">
+                      <p className="font-semibold text-xs">WireGuard</p>
+                      <p className="text-xs text-muted-foreground">Windows/Mac</p>
+                    </div>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex-col gap-2"
+                    onClick={() => window.open('https://openvpn.net/client/', '_blank')}
+                  >
+                    <Icon name="Shield" size={24} className="text-blue-500" />
+                    <div className="text-center">
+                      <p className="font-semibold text-xs">OpenVPN</p>
+                      <p className="text-xs text-muted-foreground">Все платформы</p>
+                    </div>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto py-3 flex-col gap-2"
+                    onClick={() => window.open('https://getoutline.org/', '_blank')}
+                  >
+                    <Icon name="Key" size={24} className="text-accent" />
+                    <div className="text-center">
+                      <p className="font-semibold text-xs">Outline</p>
+                      <p className="text-xs text-muted-foreground">Простой VPN</p>
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Tabs defaultValue="servers" className="space-y-6">
           <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="servers">Серверы</TabsTrigger>
