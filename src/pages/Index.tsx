@@ -5,11 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [selectedServer, setSelectedServer] = useState('us-east-1');
+  const [isPremium, setIsPremium] = useState(false);
 
   const servers = [
     { id: 'us-east-1', name: 'США (Восток)', country: 'USA', city: 'Нью-Йорк', load: 45, ping: 12, type: 'Выделенный', status: 'online' },
@@ -45,6 +48,13 @@ const Index = () => {
     setIsConnected(!isConnected);
   };
 
+  const handlePremiumPurchase = () => {
+    setIsPremium(true);
+    toast.success('Подписка Premium активирована!', {
+      description: 'Теперь у вас есть доступ ко всем возможностям DominoVPN'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
@@ -60,10 +70,92 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Badge variant="outline" className="gap-2">
-                <Icon name="Crown" size={14} />
-                Premium
-              </Badge>
+              {isPremium ? (
+                <Badge className="gap-2 bg-accent">
+                  <Icon name="Crown" size={14} />
+                  Premium
+                </Badge>
+              ) : (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Icon name="Crown" size={14} />
+                      Купить Premium
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Icon name="Crown" className="text-accent" size={24} />
+                        DominoVPN Premium
+                      </DialogTitle>
+                      <DialogDescription>
+                        Получите максимальную защиту и скорость
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-6 py-4">
+                      <div className="text-center">
+                        <div className="text-5xl font-bold mb-2">150 ₽</div>
+                        <p className="text-muted-foreground">в месяц</p>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Icon name="Check" size={12} className="text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Безлимитный трафик</p>
+                            <p className="text-sm text-muted-foreground">Без ограничений по объему данных</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Icon name="Check" size={12} className="text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Максимальная скорость</p>
+                            <p className="text-sm text-muted-foreground">До 1 Гбит/с на выделенных серверах</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Icon name="Check" size={12} className="text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Приоритетная поддержка</p>
+                            <p className="text-sm text-muted-foreground">Ответ в течение 15 минут</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Icon name="Check" size={12} className="text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Доступ к выделенным серверам</p>
+                            <p className="text-sm text-muted-foreground">68 серверов в 32 странах</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Icon name="Check" size={12} className="text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Расширенная аналитика</p>
+                            <p className="text-sm text-muted-foreground">Детальная статистика использования</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button size="lg" className="w-full" onClick={handlePremiumPurchase}>
+                        <Icon name="CreditCard" className="mr-2" size={20} />
+                        Оплатить 150 ₽
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
               <Button variant="ghost" size="icon">
                 <Icon name="Bell" size={20} />
               </Button>
