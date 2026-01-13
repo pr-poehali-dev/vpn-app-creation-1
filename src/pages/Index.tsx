@@ -8,8 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
+import { QRCodeSVG } from 'qrcode.react';
 
 const Index = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -29,6 +32,10 @@ const Index = () => {
     dns: 'Cloudflare',
     ipVersion: 'IPv4',
   });
+  const [outlineKey, setOutlineKey] = useState('');
+  const [outlineKeys, setOutlineKeys] = useState<Array<{id: string, name: string, key: string, created: string}>>([]);
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [selectedKeyForQR, setSelectedKeyForQR] = useState('');
 
   const servers = [
     { id: 'us-east-1', name: 'США (Восток)', country: 'USA', city: 'Нью-Йорк', load: 45, ping: 12, type: 'Выделенный', status: 'online' },
@@ -107,6 +114,41 @@ const Index = () => {
     toast.success('Конфигурация обновлена', {
       description: `${key}: ${value}`
     });
+  };
+
+  const addOutlineKey = () => {
+    if (!outlineKey.trim()) {
+      toast.error('Ошибка', { description: 'Введите ключ доступа Outline' });
+      return;
+    }
+    if (!outlineKey.startsWith('ss://')) {
+      toast.error('Неверный формат', { description: 'Ключ должен начинаться с ss://' });
+      return;
+    }
+    const newKey = {
+      id: Date.now().toString(),
+      name: `Сервер ${outlineKeys.length + 1}`,
+      key: outlineKey,
+      created: new Date().toLocaleString('ru-RU')
+    };
+    setOutlineKeys(prev => [...prev, newKey]);
+    setOutlineKey('');
+    toast.success('Ключ добавлен!', { description: 'Теперь можно сгенерировать QR-код' });
+  };
+
+  const deleteOutlineKey = (id: string) => {
+    setOutlineKeys(prev => prev.filter(k => k.id !== id));
+    toast.success('Ключ удален');
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Скопировано в буфер обмена');
+  };
+
+  const showQRCode = (key: string) => {
+    setSelectedKeyForQR(key);
+    setShowQRDialog(true);
   };
 
   return (
@@ -420,13 +462,189 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="servers" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+        <Tabs defaultValue="outline" className="space-y-6">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+            <TabsTrigger value="outline">Outline VPN</TabsTrigger>
             <TabsTrigger value="servers">Серверы</TabsTrigger>
             <TabsTrigger value="config">Конфигурация</TabsTrigger>
             <TabsTrigger value="activity">Активность</TabsTrigger>
             <TabsTrigger value="analytics">Аналитика</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="outline" className="space-y-6">
+            <Card className="border-accent/50">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <Icon name="Key" className="text-accent" size={24} />
+                  </div>
+                  <div>
+                    <CardTitle>Подключение к Outline VPN</CardTitle>
+                    <CardDescription>Управление вашим собственным Outline сервером</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <Icon name="Info" className="text-accent mt-0.5" size={20} />
+                    <div className="flex-1">
+                      <p className="font-semibold mb-2 text-accent">У вас есть Outline сервер?</p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Добавьте ключи доступа к вашему Outline серверу, чтобы создать QR-коды и ссылки для быстрого подключения.
+                        Ваши пользователи смогут подключиться к VPN за считанные секунды.
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Ключ выглядит примерно так: <code className="bg-muted px-1 py-0.5 rounded">ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA==@1.2.3.4:8388/?outline=1</code>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="outline-key">Ключ доступа Outline</Label>
+                    <div className="flex gap-2">
+                      <Textarea 
+                        id="outline-key"
+                        placeholder="ss://..."
+                        value={outlineKey}
+                        onChange={(e) => setOutlineKey(e.target.value)}
+                        className="font-mono text-sm min-h-[80px]"
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={addOutlineKey} className="w-full" size="lg">
+                    <Icon name="Plus" className="mr-2" size={20} />
+                    Добавить ключ доступа
+                  </Button>
+                </div>
+
+                {outlineKeys.length > 0 && (
+                  <div className="space-y-3 pt-4 border-t">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <Icon name="List" size={18} />
+                      Сохраненные ключи ({outlineKeys.length})
+                    </h4>
+                    {outlineKeys.map((item) => (
+                      <Card key={item.id} className="bg-muted/30">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <p className="font-semibold mb-1">{item.name}</p>
+                              <p className="text-xs text-muted-foreground">Добавлен: {item.created}</p>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => deleteOutlineKey(item.id)}
+                            >
+                              <Icon name="Trash2" size={16} className="text-destructive" />
+                            </Button>
+                          </div>
+                          <div className="bg-background rounded p-3 mb-3">
+                            <p className="text-xs font-mono break-all text-muted-foreground">{item.key}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => showQRCode(item.key)}
+                            >
+                              <Icon name="QrCode" className="mr-2" size={16} />
+                              QR-код
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => copyToClipboard(item.key)}
+                            >
+                              <Icon name="Copy" className="mr-2" size={16} />
+                              Копировать
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Как подключиться к Outline VPN?</CardTitle>
+                <CardDescription>Инструкция для пользователей</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 font-bold text-primary">
+                      1
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold mb-1">Скачайте Outline Client</p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Установите приложение Outline на ваше устройство
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open('https://itunes.apple.com/app/outline-app/id1356177741', '_blank')}
+                        >
+                          <Icon name="Smartphone" className="mr-2" size={14} />
+                          iOS
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open('https://play.google.com/store/apps/details?id=org.outline.android.client', '_blank')}
+                        >
+                          <Icon name="Smartphone" className="mr-2" size={14} />
+                          Android
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open('https://getoutline.org/', '_blank')}
+                        >
+                          <Icon name="Laptop" className="mr-2" size={14} />
+                          Windows/Mac
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 font-bold text-primary">
+                      2
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold mb-1">Получите ключ доступа</p>
+                      <p className="text-sm text-muted-foreground">
+                        Нажмите "QR-код" у нужного ключа выше и отсканируйте его в приложении Outline, либо скопируйте ключ и вставьте в приложение вручную
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 font-bold text-accent">
+                      3
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold mb-1">Подключитесь к VPN</p>
+                      <p className="text-sm text-muted-foreground">
+                        Откройте Outline Client и нажмите кнопку "Подключиться". Теперь вы можете безопасно пользоваться интернетом и получить доступ к заблокированным сервисам
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="servers" className="space-y-4">
             <Card>
@@ -759,6 +977,42 @@ const Index = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Icon name="QrCode" className="text-accent" size={24} />
+                QR-код для подключения
+              </DialogTitle>
+              <DialogDescription>
+                Отсканируйте этот код в приложении Outline Client
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center py-6 space-y-4">
+              <div className="bg-white p-6 rounded-lg">
+                <QRCodeSVG 
+                  value={selectedKeyForQR} 
+                  size={256}
+                  level="M"
+                  includeMargin={true}
+                />
+              </div>
+              <div className="w-full bg-muted/50 rounded-lg p-4">
+                <p className="text-xs font-mono break-all text-center">{selectedKeyForQR}</p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => copyToClipboard(selectedKeyForQR)} className="flex-1">
+                <Icon name="Copy" className="mr-2" size={16} />
+                Копировать ключ
+              </Button>
+              <Button onClick={() => setShowQRDialog(false)} className="flex-1">
+                Закрыть
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
