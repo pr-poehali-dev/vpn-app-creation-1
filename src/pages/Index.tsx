@@ -55,7 +55,7 @@ const Index = () => {
                 <Icon name="Shield" className="text-primary-foreground" size={24} />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Enterprise VPN</h1>
+                <h1 className="text-xl font-bold">DominoVPN</h1>
                 <p className="text-sm text-muted-foreground">Корпоративная защита</p>
               </div>
             </div>
