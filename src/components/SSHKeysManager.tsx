@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface SSHKey {
   id: string;
@@ -22,7 +22,6 @@ interface SSHKey {
 }
 
 const SSHKeysManager = () => {
-  const { toast } = useToast();
   const [keys, setKeys] = useState<SSHKey[]>([
     {
       id: '1',
