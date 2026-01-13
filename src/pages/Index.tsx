@@ -6,7 +6,6 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import Icon from '@/components/ui/icon';
-import SSHKeysManager from '@/components/SSHKeysManager';
 
 const Index = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -196,11 +195,10 @@ const Index = () => {
         </div>
 
         <Tabs defaultValue="servers" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="servers">Серверы</TabsTrigger>
             <TabsTrigger value="activity">Активность</TabsTrigger>
             <TabsTrigger value="analytics">Аналитика</TabsTrigger>
-            <TabsTrigger value="ssh">SSH Ключи</TabsTrigger>
           </TabsList>
 
           <TabsContent value="servers" className="space-y-4">
@@ -337,10 +335,6 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="ssh">
-            <SSHKeysManager />
           </TabsContent>
         </Tabs>
       </main>
