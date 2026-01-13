@@ -6,6 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 
@@ -19,6 +21,13 @@ const Index = () => {
     'SSL сертификат': true,
     '2FA аутентификация': true,
     'Kill Switch': false,
+  });
+  const [vpnConfig, setVpnConfig] = useState({
+    protocol: 'WireGuard',
+    encryption: 'AES-256-GCM',
+    port: '51820',
+    dns: 'Cloudflare',
+    ipVersion: 'IPv4',
   });
 
   const servers = [
@@ -91,6 +100,13 @@ const Index = () => {
       securitySettings[name] ? 'Отключено' : 'Включено',
       { description: name }
     );
+  };
+
+  const updateVpnConfig = (key: string, value: string) => {
+    setVpnConfig(prev => ({ ...prev, [key]: value }));
+    toast.success('Конфигурация обновлена', {
+      description: `${key}: ${value}`
+    });
   };
 
   return (
@@ -343,8 +359,9 @@ const Index = () => {
         </div>
 
         <Tabs defaultValue="servers" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="servers">Серверы</TabsTrigger>
+            <TabsTrigger value="config">Конфигурация</TabsTrigger>
             <TabsTrigger value="activity">Активность</TabsTrigger>
             <TabsTrigger value="analytics">Аналитика</TabsTrigger>
           </TabsList>
@@ -397,6 +414,201 @@ const Index = () => {
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="config" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Протокол и шифрование</CardTitle>
+                  <CardDescription>Настройки подключения к VPN</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="protocol">Протокол VPN</Label>
+                    <Select value={vpnConfig.protocol} onValueChange={(value) => updateVpnConfig('protocol', value)}>
+                      <SelectTrigger id="protocol">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="WireGuard">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Zap" size={14} className="text-accent" />
+                            WireGuard (Рекомендуется)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="OpenVPN">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Shield" size={14} className="text-primary" />
+                            OpenVPN
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="IKEv2">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Smartphone" size={14} className="text-blue-500" />
+                            IKEv2/IPsec
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      {vpnConfig.protocol === 'WireGuard' && 'Быстрый и современный протокол с минимальной задержкой'}
+                      {vpnConfig.protocol === 'OpenVPN' && 'Надежный протокол с высоким уровнем безопасности'}
+                      {vpnConfig.protocol === 'IKEv2' && 'Оптимален для мобильных устройств'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="encryption">Тип шифрования</Label>
+                    <Select value={vpnConfig.encryption} onValueChange={(value) => updateVpnConfig('encryption', value)}>
+                      <SelectTrigger id="encryption">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AES-256-GCM">AES-256-GCM</SelectItem>
+                        <SelectItem value="AES-256-CBC">AES-256-CBC</SelectItem>
+                        <SelectItem value="ChaCha20">ChaCha20-Poly1305</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Военный уровень шифрования данных</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="port">Порт подключения</Label>
+                    <Select value={vpnConfig.port} onValueChange={(value) => updateVpnConfig('port', value)}>
+                      <SelectTrigger id="port">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="51820">51820 (WireGuard)</SelectItem>
+                        <SelectItem value="1194">1194 (OpenVPN UDP)</SelectItem>
+                        <SelectItem value="443">443 (HTTPS)</SelectItem>
+                        <SelectItem value="500">500 (IKEv2)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Порт 443 обходит большинство файрволов</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Сетевые настройки</CardTitle>
+                  <CardDescription>DNS и IP конфигурация</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="dns">DNS сервер</Label>
+                    <Select value={vpnConfig.dns} onValueChange={(value) => updateVpnConfig('dns', value)}>
+                      <SelectTrigger id="dns">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Cloudflare">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Cloud" size={14} />
+                            Cloudflare (1.1.1.1)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Google">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Globe" size={14} />
+                            Google (8.8.8.8)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="OpenDNS">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Server" size={14} />
+                            OpenDNS
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="Custom">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Settings" size={14} />
+                            Пользовательский
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Защищенные DNS-запросы без утечек</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="ipVersion">Версия IP протокола</Label>
+                    <Select value={vpnConfig.ipVersion} onValueChange={(value) => updateVpnConfig('ipVersion', value)}>
+                      <SelectTrigger id="ipVersion">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="IPv4">IPv4</SelectItem>
+                        <SelectItem value="IPv6">IPv6</SelectItem>
+                        <SelectItem value="Dual">Dual Stack (IPv4 + IPv6)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">IPv4 обеспечивает максимальную совместимость</p>
+                  </div>
+
+                  <div className="pt-4 border-t space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">MTU размер пакета</p>
+                        <p className="text-xs text-muted-foreground">1420 байт</p>
+                      </div>
+                      <Badge variant="outline">Авто</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">Keepalive интервал</p>
+                        <p className="text-xs text-muted-foreground">25 секунд</p>
+                      </div>
+                      <Badge variant="outline">Оптимально</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">Реконнект при обрыве</p>
+                        <p className="text-xs text-muted-foreground">Автоматически</p>
+                      </div>
+                      <Switch checked={true} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Текущая конфигурация</CardTitle>
+                <CardDescription>Параметры активного подключения</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted/50 rounded-lg p-4 font-mono text-sm space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Протокол:</span>
+                    <span className="font-semibold text-accent">{vpnConfig.protocol}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Шифрование:</span>
+                    <span className="font-semibold">{vpnConfig.encryption}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Порт:</span>
+                    <span className="font-semibold">{vpnConfig.port}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">DNS:</span>
+                    <span className="font-semibold">{vpnConfig.dns}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">IP версия:</span>
+                    <span className="font-semibold">{vpnConfig.ipVersion}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-border">
+                    <span className="text-muted-foreground">Статус:</span>
+                    <Badge className="bg-accent">Оптимизировано</Badge>
+                  </div>
                 </div>
               </CardContent>
             </Card>
